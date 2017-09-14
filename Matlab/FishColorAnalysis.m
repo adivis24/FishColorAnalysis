@@ -12,7 +12,6 @@ n_color = 256;
 cmap = hsv(n_color);
 
 %% Preprocess
-
 for i = 1:n_img
     rgbImage = imread([imgDir imgList(i).name]);
     [rows, columns, numberOfColorBands] = size(rgbImage);
@@ -59,8 +58,8 @@ p3 = plot(hMean(3,i_c),'ks-','MarkerSize',8,'MarkerFaceColor','b');
 p4 = plot(hMean(4,i_c),'kp-','MarkerSize',8,'MarkerFaceColor','y');
 hold off;
 
-lgd = legend([p1,p2],...
-    'IRL','PBS',...
+lgd = legend([p1,p2,p3,p4],...
+    'Group 1','Group 2','Group 3','Group 4',...
     'Location','Best');
 xlabel('Colors'), ylabel('Count');
 ylim([-0.01,Inf]);
@@ -78,6 +77,7 @@ for j = 1:n_color
     end
 end
 
+%%
 i_cSig12 = [];
 for j = i_cSig
     [h,p12] =ttest2(hueHistNorm3D(:,2,j), hueHistNorm3D(:,3,j));
@@ -103,7 +103,7 @@ set(lgd,'FontSize',30);
 xlabel('Colors', 'FontSize', 16), ylabel('Proportion', 'FontSize', 16);
 ylim([-0.01,Inf]);
 title('Pair-wise T-Test between T1 and T2 (p < 0.01)','fontsize',20);
-
+%%
 i_cSig23 = [];
 for j = i_cSig
     [h,p23] =ttest2(hueHistNorm3D(:,3,j), hueHistNorm3D(:,4,j));
@@ -130,6 +130,7 @@ xlabel('Colors', 'FontSize', 16), ylabel('Proportion', 'FontSize', 16);
 ylim([-0.01,Inf]);
 title('Pair-wise T-Test between T2 and T3 (p < 0.01)','fontsize',20);
 
+%%
 i_cSig13 = [];
 for j = i_cSig
     [h,p13] =ttest2(hueHistNorm3D(:,2,j), hueHistNorm3D(:,4,j));
@@ -156,7 +157,7 @@ xlabel('Colors', 'FontSize', 16), ylabel('Proportion', 'FontSize', 16);
 ylim([-0.01,Inf]);
 title('Pair-wise T-Test between T1 and T3 (p < 0.01)','fontsize',20);
 
-
+%%
 figure;
 hold on;
 for i = 1:length(i_cSig)
