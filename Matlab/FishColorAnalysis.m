@@ -1,7 +1,3 @@
-%% Notes
-% Hue = (650 - wavelength)*240/(650-475);
-% L = 620 - 170 / 270 * H
-
 %% Get image files
 clear all;
 close all;
@@ -10,20 +6,17 @@ imgDir = uigetdir;
 imgDir = [imgDir '/'];
 imgList=[dir([imgDir '*.jpg']);dir([imgDir '*.png']);dir([imgDir '*.tif'])];
 n_img=length(imgList);
-% n_group = 2;
-% n_indiv = 5;
- n_group = 4;
- n_indiv = 9;
+n_group = 4;
+n_indiv = 9;
 n_color = 256;
 cmap = hsv(n_color);
 
-%%
+%% Preprocess
 
 for i = 1:n_img
-%     figure;
     rgbImage = imread([imgDir imgList(i).name]);
     [rows, columns, numberOfColorBands] = size(rgbImage);
-
+    
     mask = rgbImage(:,:,1) >25 & rgbImage(:,:,2) < 240 & rgbImage(:,:,3) >25;
     maskedRgbImage = bsxfun(@times, rgbImage, cast(mask, class(rgbImage)));
     
@@ -36,22 +29,9 @@ for i = 1:n_img
 end
 
 for i = 1:n_group
-groupHist(i,:) = sum(hueHist((i-1)*n_indiv+1:(i-1)*n_indiv+n_indiv,:));
-groupHistNorm(i,:) = groupHist(i,:)/norm(groupHist(i,:));
+    groupHist(i,:) = sum(hueHist((i-1)*n_indiv+1:(i-1)*n_indiv+n_indiv,:));
+    groupHistNorm(i,:) = groupHist(i,:)/norm(groupHist(i,:));
 end
-
-% for i = 1:n_group
-%     figure;
-%     hold on;
-%     for j = 1:n_color
-%     patch([j-.5,j+.5,j+.5,j-.5],[0,0,groupHist(i,j),groupHist(i,j)],cmap(j,:),'FaceAlpha', 1);
-%     end
-%     hold off;
-%     grid on;
-%     title(['Histogram of Hue for T' num2str(i-1)], 'FontSize', 20);
-%     set(gcf, 'units','normalized','outerposition',[0 0 1 1]);
-% end
-
 
 %% Overview of Group Color Histogram
 i_hMean = 1;
@@ -79,9 +59,6 @@ p3 = plot(hMean(3,i_c),'ks-','MarkerSize',8,'MarkerFaceColor','b');
 p4 = plot(hMean(4,i_c),'kp-','MarkerSize',8,'MarkerFaceColor','y');
 hold off;
 
-% lgd = legend([p1,p2],...
-%     'Yellow Group','Blue Group',...
-%     'Location','Best');
 lgd = legend([p1,p2],...
     'IRL','PBS',...
     'Location','Best');
@@ -103,10 +80,10 @@ end
 
 i_cSig12 = [];
 for j = i_cSig
-   [h,p12] =ttest2(hueHistNorm3D(:,2,j), hueHistNorm3D(:,3,j));
-   if p12 < 0.001
-       i_cSig12(end+1) = j;
-   end
+    [h,p12] =ttest2(hueHistNorm3D(:,2,j), hueHistNorm3D(:,3,j));
+    if p12 < 0.001
+        i_cSig12(end+1) = j;
+    end
 end
 
 figure;
@@ -129,10 +106,10 @@ title('Pair-wise T-Test between T1 and T2 (p < 0.01)','fontsize',20);
 
 i_cSig23 = [];
 for j = i_cSig
-   [h,p23] =ttest2(hueHistNorm3D(:,3,j), hueHistNorm3D(:,4,j));
-   if p23 < 0.001
-       i_cSig23(end+1) = j;
-   end
+    [h,p23] =ttest2(hueHistNorm3D(:,3,j), hueHistNorm3D(:,4,j));
+    if p23 < 0.001
+        i_cSig23(end+1) = j;
+    end
 end
 
 figure;
@@ -155,10 +132,10 @@ title('Pair-wise T-Test between T2 and T3 (p < 0.01)','fontsize',20);
 
 i_cSig13 = [];
 for j = i_cSig
-   [h,p13] =ttest2(hueHistNorm3D(:,2,j), hueHistNorm3D(:,4,j));
-   if p13 < 0.001
-       i_cSig13(end+1) = j;
-   end
+    [h,p13] =ttest2(hueHistNorm3D(:,2,j), hueHistNorm3D(:,4,j));
+    if p13 < 0.001
+        i_cSig13(end+1) = j;
+    end
 end
 
 figure;
@@ -204,13 +181,14 @@ title('ANOVA among T1, T2 and T3 (p < 0.00001)','fontsize',20);
 
 
 %% Chi-Square Histogram Distance
-% dist_func=@chi_square_statistics_fast;
-% D=pdist2(hueHistNorm,hueHistNorm,dist_func);
-% hm = HeatMap(D);
-% hm.addTitle('Chi-Square Distance Heat Map');
-% hm.plot;
+dist_func=@chi_square_statistics_fast;
+D=pdist2(hueHistNorm,hueHistNorm,dist_func);
+hm = HeatMap(D);
+hm.addTitle('Chi-Square Distance Heat Map');
+hm.plot;
 figure;
-% Eigenspace Analysis
+
+%% Eigenspace Analysis
 cSig = cmap(i_cSig,:);
 c1 = cmap(i_c1,:);
 c2 = cmap(i_c2,:);
@@ -237,7 +215,7 @@ quiver3(repmat(cSigM(1),1,3),repmat(cSigM(2),1,3),repmat(cSigM(3),1,3),...
 hold off;
 grid on;
 
-% plot mean color point clouds for T0, T1, T2, T3
+%% plot mean color point clouds for T0, T1, T2, T3
 figure;
 hold on;
 scatter3(c1(:,1) + (rand(length(c1(:,1)),1)-0.5)*0.05,...
@@ -277,8 +255,8 @@ for i = 1:3
 end
 
 for i = 1:3
-%     patch([i-1 i i i-1], [0 0 0.5 0.5], (repmat(0.5,3,1)+S(:,i)/norm(S(:,i))/2)')
-%     patch([i-1 i i i-1], [0.5 0.5 1 1], (repmat(0.5,3,1)-S(:,i)/norm(S(:,i))/2)')
+    %     patch([i-1 i i i-1], [0 0 0.5 0.5], (repmat(0.5,3,1)+S(:,i)/norm(S(:,i))/2)')
+    %     patch([i-1 i i i-1], [0.5 0.5 1 1], (repmat(0.5,3,1)-S(:,i)/norm(S(:,i))/2)')
     patch([i-1 i i i-1], [0 0 0.5 0.5], eigcolors1(i,:))
     patch([i-1 i i i-1], [0.5 0.5 1 1], eigcolors2(i,:))
 end
